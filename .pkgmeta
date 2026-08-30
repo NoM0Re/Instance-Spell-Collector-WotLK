@@ -1,0 +1,26 @@
+package-as: !InstanceSpellCollector
+
+enable-nolib-creation: no
+
+manual-changelog:
+  filename: .release-changelog.md
+  markup-type: markdown
+
+ignore:
+  - .github
+  - .agents-cache
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .luacheckrc
+  - .pkgmeta
+  - .release-changelog-section.md
+  - AGENTS.md
+  - APIDocumentation
+  - CHANGELOG.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - README.md
+
+move-folders:
+  Instance-Spell-Collector/!InstanceSpellCollector: !InstanceSpellCollector

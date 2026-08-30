@@ -1,0 +1,63 @@
+name: build
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Prepare changelog
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          release_date="$(git log -1 --format=%cs "${GITHUB_REF_NAME}")"
+          previous_tag="$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)"
+          changelog_section=".release-changelog-section.md"
+
+          awk -v version="$version" '
+            BEGIN { capture = 0 }
+            /^## / {
+              heading = $0
+              gsub(/^## +/, "", heading)
+              gsub(/^\[/, "", heading)
+              gsub(/\].*$/, "", heading)
+              gsub(/^v/, "", heading)
+              split(heading, parts, /[ (]/)
+              heading = parts[1]
+              if (heading == version) { capture = 1; next }
+              if (capture) { exit }
+            }
+            capture { print }
+          ' CHANGELOG.md > "$changelog_section"
+
+          {
+            echo "## [${version}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${GITHUB_REF_NAME}) (${release_date})"
+            echo
+            if [[ -n "$previous_tag" ]]; then
+              echo "[Full Changelog](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${previous_tag}...${GITHUB_REF_NAME}) [Previous Version](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${previous_tag})"
+            fi
+            echo
+            cat "$changelog_section"
+          } > .release-changelog.md
+
+      - name: Create release package
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -l -g 3.3.5 -n "!InstanceSpellCollector"
+        env:
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,66 @@
+name: Bug Report
+description: Report a reproducible problem with the WotLK backport
+labels: ["bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Existing issue
+      options:
+        - label: I searched open and closed issues for this problem.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Addon version
+      placeholder: "r20-wotlk.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: Client
+      options:
+        - WotLK 3.3.5a
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Locale and server
+      placeholder: "deDE, server name"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Enter ...
+        2. Use ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Lua error
+      description: Paste the complete error if one was produced.
+      render: Text
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Include screenshots, collected data, or SavedVariables when relevant.
+
+  - type: checkboxes
+    attributes:
+      label: Isolated test
+      options:
+        - label: I tested with only Instance Spell Collector enabled.

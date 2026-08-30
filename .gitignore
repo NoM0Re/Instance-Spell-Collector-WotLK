@@ -1,3 +1,10 @@
+# Local environment
+.vscode/
+.release/
+
+# Local reference and agent data
+.agents-cache/
+
 # Compiled Lua sources
 luac.out
 
