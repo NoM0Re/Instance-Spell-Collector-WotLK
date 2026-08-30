@@ -1,7 +1,5 @@
-# Changelog
+# Instance Spell Collector
 
-All notable changes to the WotLK 3.3.5a backport will be documented here.
+## [r20](https://github.com/enderneko/InstanceSpellCollector/tree/r20) (2025-09-27)
 
-## Unreleased
-
-- Addon source has not yet been imported or ported.
+- Fix for mists

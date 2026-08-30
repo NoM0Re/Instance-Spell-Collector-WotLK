@@ -1,10 +1,6 @@
 local addonName, ISC = ...
 local P = ISC.pixelPerfectFuncs
 
-ISC.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-ISC.isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-ISC.isWrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
-
 local version, build = GetBuildInfo()
 ISC.build = version .. "." .. build
 
@@ -14,9 +10,6 @@ eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
     self[event](self, ...)
 end)
-
-local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-
 function eventFrame:ADDON_LOADED(arg1)
     if arg1 == addonName then
         eventFrame:UnregisterEvent("ADDON_LOADED")
@@ -44,8 +37,8 @@ function eventFrame:ADDON_LOADED(arg1)
         -- data table
         if type(ISC_Data) ~= "table" then
             ISC_Data = {
-                -- [instanceId] = {
-                --     [instanceName] = (string),
+                -- [englishInstanceName] = {
+                --     ["name"] = (string),
                 --     ["enabled"] = (boolean),
                 --     ["data"] = {
                 --         [encounterDisplayName] = {
@@ -81,7 +74,7 @@ function eventFrame:ADDON_LOADED(arg1)
             ISC_Spell = {
                 -- [id] = {
                 --     ["name"] = (string),
-                --     ["icon"] = (number),
+                --     ["icon"] = (string),
                 --     ["desc"] = (string),
                 --     ["sources"] = {
                 --         [npcId] = npcName,
@@ -191,25 +184,35 @@ function eventFrame:ADDON_LOADED(arg1)
             ISC_NpcId = nil
 
             -- process spells
-            for spellId, t in pairs(spell_temp) do
-                local spell = Spell:CreateFromSpellID(spellId)
-                spell:ContinueOnSpellLoad(function()
-                    t["name"] = spell:GetSpellName() or "INVALID"
-                    t["desc"] = spell:GetSpellDescription() or ""
-                    t["icon"] = spell:GetSpellTexture() or 134400
+            local spellDescriptionTooltip = CreateFrame("GameTooltip", "ISCMigrationSpellDescriptionTooltip", UIParent, "GameTooltipTemplate")
+            spellDescriptionTooltip:SetFrameLevel(UIParent:GetFrameLevel() + 1)
+            spellDescriptionTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 
-                    if C_Spell and C_Spell.GetSpellInfo then
-                        t["castTime"] = info.castTime or 0
-                    else
-                        t["castTime"] = select(4, GetSpellInfo(spellId)) or 0
+            for spellId, t in pairs(spell_temp) do
+                local name, _, icon, _, _, _, castTime = GetSpellInfo(spellId)
+                t["name"] = name or "INVALID"
+                t["icon"] = icon or "Interface\\Icons\\INV_Misc_QuestionMark"
+                t["castTime"] = castTime or 0
+
+                t["desc"] = ""
+                if name then
+                    spellDescriptionTooltip:ClearLines()
+                    spellDescriptionTooltip:SetHyperlink("spell:" .. spellId)
+                    for i = 1, spellDescriptionTooltip:GetNumRegions() do
+                        local region = select(i, spellDescriptionTooltip:GetRegions())
+                        if region:GetObjectType() == "FontString" and select(3, region:GetTextColor()) == 0 then
+                            t["desc"] = region:GetText() or ""
+                            break
+                        end
                     end
-                    if t["castTime"] == 0 then
-                        t["castType"] = "instant"
-                        t["castTime"] = nil
-                    else
-                        t["castType"] = "cast"
-                    end
-                end)
+                end
+
+                if t["castTime"] == 0 then
+                    t["castType"] = "instant"
+                    t["castTime"] = nil
+                else
+                    t["castType"] = "cast"
+                end
             end
         end
 
@@ -218,9 +221,45 @@ function eventFrame:ADDON_LOADED(arg1)
         -- ignore (don't ask again)
         if type(ISC_Ignore) ~= "table" then
             ISC_Ignore = {
-                -- [instanceId] = "instanceName",
+                -- [englishInstanceName] = "englishInstanceName",
             }
         end
+
+        local function MergeData(target, source)
+            for key, value in pairs(source) do
+                if type(value) == "table" and type(target[key]) == "table" then
+                    MergeData(target[key], value)
+                elseif target[key] == nil then
+                    target[key] = value
+                end
+            end
+        end
+
+        local normalizedData = {}
+        for instanceKey, instance in pairs(ISC_Data) do
+            if type(instance) == "table" then
+                local storedName = type(instance.name) == "string" and instance.name or tostring(instanceKey)
+                local englishName = ISC.instanceNames[storedName] or storedName
+                instance.name = englishName
+
+                if normalizedData[englishName] then
+                    normalizedData[englishName].enabled = normalizedData[englishName].enabled or instance.enabled
+                    MergeData(normalizedData[englishName].data, instance.data or {})
+                else
+                    normalizedData[englishName] = instance
+                    normalizedData[englishName].data = normalizedData[englishName].data or {}
+                end
+            end
+        end
+        ISC_Data = normalizedData
+
+        local normalizedIgnore = {}
+        for instanceKey, instanceName in pairs(ISC_Ignore) do
+            local storedName = type(instanceName) == "string" and instanceName or tostring(instanceKey)
+            local englishName = ISC.instanceNames[storedName] or storedName
+            normalizedIgnore[englishName] = englishName
+        end
+        ISC_Ignore = normalizedIgnore
 
         ISC:Fire("AddonLoaded")
     end
@@ -241,9 +280,5 @@ end)
 SLASH_ISC1 = "/isc"
 function SlashCmdList.ISC(msg, editbox)
     -- local command, rest = msg:match("^(%S*)%s*(.-)$")
-    InstanceSpellCollectorFrame:Show()
-end
-
-function ISC_OnAddonCompartmentClick()
     InstanceSpellCollectorFrame:Show()
 end

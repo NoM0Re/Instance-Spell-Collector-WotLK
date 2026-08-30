@@ -1,4 +1,4 @@
-package-as: !InstanceSpellCollector
+package-as: Instance-Spell-Collector
 
 enable-nolib-creation: no
 
@@ -9,6 +9,7 @@ manual-changelog:
 ignore:
   - .github
   - .agents-cache
+  - .discord-release.md
   - .editorconfig
   - .gitattributes
   - .gitignore

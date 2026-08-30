@@ -1,4 +1,4 @@
-local addonName, addon = ...
+local _, addon = ...
 local P = addon.pixelPerfectFuncs
 
 -----------------------------------------
@@ -58,7 +58,8 @@ function addon:StylizeFrame(frame, color, borderColor)
 end
 
 function addon:CreateFrame(name, parent, width, height, isTransparent)
-    local f = CreateFrame("Frame", name, parent, "BackdropTemplate")
+    local f = CreateFrame("Frame", name, parent)
+    if parent then f:SetFrameLevel(parent:GetFrameLevel() + 1) end
     f:Hide()
     if not isTransparent then addon:StylizeFrame(f) end
     f:EnableMouse(true)
@@ -73,6 +74,7 @@ local function SetTooltip(widget, anchor, x, y, ...)
     local tooltips = {...}
 
     if #tooltips ~= 0 then
+        widget:EnableMouse(true)
         widget:HookScript("OnEnter", function()
             ISCTooltip:SetOwner(widget, anchor or "ANCHOR_TOP", x or 0, y or 0)
             ISCTooltip:AddLine(tooltips[1])
@@ -94,7 +96,7 @@ end
 function addon:CreateButton(parent, text, buttonColor, size, noBorder, isSecure, ...)
     local b
     if isSecure then
-        b = CreateFrame("Button", "ISC_"..text, parent, "SecureActionButtonTemplate,BackdropTemplate")
+        b = CreateFrame("Button", "ISC_"..text, parent, "SecureActionButtonTemplate")
         b:RegisterForClicks("AnyUp", "AnyDown")
 
         -- b:SetAttribute("type", "click")
@@ -109,10 +111,11 @@ function addon:CreateButton(parent, text, buttonColor, size, noBorder, isSecure,
         --     end
         -- ]])
     else
-        b = CreateFrame("Button", "ISC_"..text, parent, "BackdropTemplate")
+        b = CreateFrame("Button", "ISC_"..text, parent)
     end
 
-    if parent then b:SetFrameLevel(parent:GetFrameLevel()+1) end
+    if parent then b:SetFrameLevel(parent:GetFrameLevel() + 1) end
+    b:EnableMouse(true)
     b:SetText(text)
     P:Size(b, size[1], size[2])
     
@@ -209,32 +212,14 @@ function addon:CreateButton(parent, text, buttonColor, size, noBorder, isSecure,
         b:SetScript("OnLeave", function(self) self:SetBackdropColor(unpack(color)) end)
     end
     
-    -- click sound
-    if addon.isRetail then
-        b:SetScript("PostClick", function(self, button, down)
-            --! NOTE: ActionButtonUseKeyDown will affect OnClick
-            if isSecure then
-                if down == GetCVarBool("ActionButtonUseKeyDown") then
-                    PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-                end
-            else
-                PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-            end
-        end)
-    else
-        b:SetScript("PostClick", function() PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON) end)
-    end
+    b:SetScript("PostClick", function() PlaySound("UChatScrollButton") end)
 
     -- texture
-    function b:SetTexture(tex, texSize, point, isAtlas)
+    function b:SetTexture(tex, texSize, point)
         b.tex = b:CreateTexture(nil, "ARTWORK")
         b.tex:SetPoint(unpack(point))
         b.tex:SetSize(unpack(texSize))
-        if isAtlas then
-            b.tex:SetAtlas(tex)
-        else
-            b.tex:SetTexture(tex)
-        end
+        b.tex:SetTexture(tex)
         -- update fontstring point
         if s then
             s:ClearAllPoints()
@@ -346,9 +331,11 @@ function addon:CreateCheckButton(parent, label, color, onClick, ...)
     -- OptionsBaseCheckButtonTemplate -->  FrameXML\OptionsPanelTemplates.xml line 10
     
     local cb = CreateFrame("CheckButton", nil, parent)
+    if parent then cb:SetFrameLevel(parent:GetFrameLevel() + 1) end
+    cb:EnableMouse(true)
     cb.onClick = onClick
     cb:SetScript("OnClick", function(self)
-        PlaySound(self:GetChecked() and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF)
+        PlaySound(self:GetChecked() and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
         if cb.onClick then cb.onClick(self:GetChecked() and true or false, self) end
     end)
     
@@ -377,7 +364,8 @@ end
 -- editbox 2017-06-21 10:19:33
 -----------------------------------------
 function addon:CreateEditBox(parent, width, height, isTransparent, isMultiLine, isNumeric)
-    local eb = CreateFrame("EditBox", nil, parent, "BackdropTemplate")
+    local eb = CreateFrame("EditBox", nil, parent)
+    if parent then eb:SetFrameLevel(parent:GetFrameLevel() + 1) end
     if not isTransparent then addon:StylizeFrame(eb, {0.1, 0.1, 0.1, 0.9}) end
     eb:SetFontObject("GameFontWhite")
     eb:SetMultiLine(isMultiLine)
@@ -401,6 +389,7 @@ end
 
 function addon:CreateScrollEditBox(parent, onTextChanged)
     local frame = CreateFrame("Frame", nil, parent)
+    if parent then frame:SetFrameLevel(parent:GetFrameLevel() + 1) end
     addon:CreateScrollFrame(frame)
     addon:StylizeFrame(frame.scrollFrame, {0.15, 0.15, 0.15, 0.9})
     
@@ -455,9 +444,10 @@ end
 -----------------------------------------
 -- Interface\FrameXML\OptionsPanelTemplates.xml, line 76, OptionsSliderTemplate
 function addon:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, afterValueChangedFn, isPercentage)
-    local slider = CreateFrame("Slider", nil, parent, "BackdropTemplate")
+    local slider = CreateFrame("Slider", nil, parent)
+    if parent then slider:SetFrameLevel(parent:GetFrameLevel() + 1) end
+    slider:EnableMouse(true)
     slider:SetValueStep(step)
-    slider:SetObeyStepOnDrag(true)
     slider:SetOrientation("HORIZONTAL")
     slider:SetSize(width, 10)
     local unit = isPercentage and "%" or ""
@@ -518,18 +508,18 @@ function addon:CreateSlider(name, parent, low, high, width, step, onValueChanged
     highText:SetPoint("BOTTOM", currentEditBox)
 
     local tex = slider:CreateTexture(nil, "ARTWORK")
-    tex:SetColorTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
+    tex:SetTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
     tex:SetSize(8, 8)
     slider:SetThumbTexture(tex)
 
     local valueBeforeClick
     slider.onEnter = function()
-        tex:SetColorTexture(accentColor[1], accentColor[2], accentColor[3], 1)
+        tex:SetTexture(accentColor[1], accentColor[2], accentColor[3], 1)
         valueBeforeClick = slider:GetValue()
     end
     slider:SetScript("OnEnter", slider.onEnter)
     slider.onLeave = function()
-        tex:SetColorTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
+        tex:SetTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
     end
     slider:SetScript("OnLeave", slider.onLeave)
 
@@ -571,7 +561,7 @@ function addon:CreateSlider(name, parent, low, high, width, step, onValueChanged
         currentEditBox:SetEnabled(false)
         slider:SetScript("OnEnter", nil)
         slider:SetScript("OnLeave", nil)
-        tex:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+        tex:SetTexture(0.4, 0.4, 0.4, 0.7)
         lowText:SetTextColor(0.4, 0.4, 0.4)
         highText:SetTextColor(0.4, 0.4, 0.4)
     end)
@@ -581,7 +571,7 @@ function addon:CreateSlider(name, parent, low, high, width, step, onValueChanged
         currentEditBox:SetEnabled(true)
         slider:SetScript("OnEnter", slider.onEnter)
         slider:SetScript("OnLeave", slider.onLeave)
-        tex:SetColorTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
+        tex:SetTexture(accentColor[1], accentColor[2], accentColor[3], 0.7)
         lowText:SetTextColor(unpack(colors.grey.t))
         highText:SetTextColor(unpack(colors.grey.t))
     end)
@@ -603,7 +593,8 @@ end
 --------------------------------------------------------
 function addon:CreateScrollFrame(parent, top, bottom, color, border)
     -- create scrollFrame & scrollbar seperately (instead of UIPanelScrollFrameTemplate), in order to custom it
-    local scrollFrame = CreateFrame("ScrollFrame", parent:GetName() and parent:GetName().."ScrollFrame" or nil, parent, "BackdropTemplate")
+    local scrollFrame = CreateFrame("ScrollFrame", parent:GetName() and parent:GetName().."ScrollFrame" or nil, parent)
+    scrollFrame:SetFrameLevel(parent:GetFrameLevel() + 1)
     parent.scrollFrame = scrollFrame
     top = top or 0
     bottom = bottom or 0
@@ -623,13 +614,14 @@ function addon:CreateScrollFrame(parent, top, bottom, color, border)
     
     -- content
     local content = CreateFrame("Frame", nil, scrollFrame)
+    content:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
     content:SetSize(scrollFrame:GetWidth(), 2)
     scrollFrame:SetScrollChild(content)
     scrollFrame.content = content
-    -- content:SetFrameLevel(2)
     
     -- scrollbar
-    local scrollbar = CreateFrame("Frame", nil, scrollFrame, "BackdropTemplate")
+    local scrollbar = CreateFrame("Frame", nil, scrollFrame)
+    scrollbar:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
     scrollbar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", 2, 0)
     scrollbar:SetPoint("BOTTOMRIGHT", scrollFrame, 7, 0)
     scrollbar:Hide()
@@ -637,7 +629,8 @@ function addon:CreateScrollFrame(parent, top, bottom, color, border)
     scrollFrame.scrollbar = scrollbar
     
     -- scrollbar thumb
-    local scrollThumb = CreateFrame("Frame", nil, scrollbar, "BackdropTemplate")
+    local scrollThumb = CreateFrame("Frame", nil, scrollbar)
+    scrollThumb:SetFrameLevel(scrollbar:GetFrameLevel() + 1)
     scrollThumb:SetWidth(5) -- scrollbar's width is 5
     scrollThumb:SetHeight(scrollbar:GetHeight())
     scrollThumb:SetPoint("TOP")

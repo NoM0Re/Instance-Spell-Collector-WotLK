@@ -2,22 +2,22 @@
 -- http://wow.gamepedia.com/UI_Scale
 -- http://www.wowinterface.com/forums/showthread.php?t=31813
 --------------------------------------------
-local addonName, addon = ...
+local _, addon = ...
 addon.pixelPerfectFuncs = {}
 local P = addon.pixelPerfectFuncs
 
 function P:GetResolution()
-    -- return string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x(%d+)")
-    return GetPhysicalScreenSize()
+    local resolution = ({GetScreenResolutions()})[GetCurrentResolution()] or ""
+    return string.match(resolution, "(%d+).-(%d+)")
 end
 
--- The UI P:Scale goes from 1 to 0.64. 
--- At 768y we see pixel-per-pixel accurate representation of our texture, 
+-- The UI P:Scale goes from 1 to 0.64.
+-- At 768y we see pixel-per-pixel accurate representation of our texture,
 -- and again at 1200y if at 0.64 scale.
 function P:GetPixelPerfectScale()
-    local hRes, vRes = P:GetResolution()
+    local _, vRes = P:GetResolution()
     if vRes then
-        return 768/vRes
+        return 768 / vRes
     else -- windowed mode before 8.0, or maybe something goes wrong?
         return 1
     end
@@ -32,7 +32,9 @@ end
 function P:PixelPerfectPoint(frame)
     local left = frame:GetLeft()
     local top = frame:GetTop()
-    
+
+    if not left or not top then return end
+
     frame:ClearAllPoints()
     frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", math.floor(left + 0.5), math.floor(top + 0.5))
 end
@@ -129,7 +131,7 @@ end
 function P:Point(frame, ...)
     if not frame.points then frame.points = {} end
     local point, anchorTo, anchorPoint, x, y
-    
+
     local n = select("#", ...)
     if n == 1 then
         point = ...
@@ -142,8 +144,8 @@ function P:Point(frame, ...)
     end
 
     tinsert(frame.points, {point, anchorTo or frame:GetParent(), anchorPoint or point, x or 0, y or 0})
-    local n = #frame.points
-    frame:SetPoint(frame.points[n][1], frame.points[n][2], frame.points[n][3], P:Scale(frame.points[n][4]), P:Scale(frame.points[n][5]))
+    local i = #frame.points
+    frame:SetPoint(frame.points[i][1], frame.points[i][2], frame.points[i][3], P:Scale(frame.points[i][4]), P:Scale(frame.points[i][5]))
 end
 
 function P:ClearPoints(frame)
@@ -157,7 +159,7 @@ end
 function P:Resize(frame)
     if frame.width then
         frame:SetWidth(P:Scale(frame.width))
-    end 
+    end
     if frame.height then
         frame:SetHeight(P:Scale(frame.height))
     end
@@ -179,17 +181,6 @@ function P:Repoint(frame)
     end
 end
 
--- local frames = {}
--- function P:SetPixelPerfect(frame)
---     tinsert(frames, frame)
--- end
-
--- function P:UpdatePixelPerfectFrames()
---     for _, f in pairs(frames) do
---         f:UpdatePixelPerfect()
---     end
--- end
-
 --------------------------------------------
 -- save & load position
 --------------------------------------------
@@ -207,48 +198,3 @@ function P:LoadPosition(frame, positionTable)
     P:Point(frame, "TOPLEFT", UIParent, "BOTTOMLEFT", positionTable[1], positionTable[2])
     return true
 end
-
----------------------------------------------------------------------
--- pixel perfect (ElvUI)
----------------------------------------------------------------------
-local function CheckPixelSnap(frame, snap)
-    if (frame and not frame:IsForbidden()) and frame.PixelSnapDisabled and snap then
-        frame.PixelSnapDisabled = nil
-    end
-end
-
-local function DisablePixelSnap(frame)
-    if (frame and not frame:IsForbidden()) and not frame.PixelSnapDisabled then
-        if frame.SetSnapToPixelGrid then
-            frame:SetSnapToPixelGrid(false)
-            frame:SetTexelSnappingBias(0)
-            frame.PixelSnapDisabled = true
-        elseif frame.GetStatusBarTexture then
-            local texture = frame:GetStatusBarTexture()
-            if type(texture) == "table" and texture.SetSnapToPixelGrid then
-                texture:SetSnapToPixelGrid(false)
-                texture:SetTexelSnappingBias(0)
-                frame.PixelSnapDisabled = true
-            end
-        end
-    end
-end
-
-local function UpdateMetatable(obj)
-    local t = getmetatable(obj).__index
-
-    if not obj.DisabledPixelSnap and (t.SetSnapToPixelGrid or t.SetStatusBarTexture or t.SetColorTexture or t.SetVertexColor or t.CreateTexture or t.SetTexCoord or t.SetTexture) then
-        if t.SetSnapToPixelGrid then hooksecurefunc(t, "SetSnapToPixelGrid", CheckPixelSnap) end
-        if t.SetStatusBarTexture then hooksecurefunc(t, "SetStatusBarTexture", DisablePixelSnap) end
-        if t.SetColorTexture then hooksecurefunc(t, "SetColorTexture", DisablePixelSnap) end
-        if t.SetVertexColor then hooksecurefunc(t, "SetVertexColor", DisablePixelSnap) end
-        if t.CreateTexture then hooksecurefunc(t, "CreateTexture", DisablePixelSnap) end
-        if t.SetTexCoord then hooksecurefunc(t, "SetTexCoord", DisablePixelSnap) end
-        if t.SetTexture then hooksecurefunc(t, "SetTexture", DisablePixelSnap) end
-
-        t.DisabledPixelSnap = true
-    end
-end
-
-local obj = CreateFrame("Frame")
-UpdateMetatable(obj:CreateTexture())

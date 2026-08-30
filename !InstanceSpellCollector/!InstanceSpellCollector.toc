@@ -1,15 +1,16 @@
-## Interface: 110200
+## Interface: 30300
 ## Title: |cffff595eInstance|r |cffffca3aSpell|r |cff8ac926Collector|r
 ## Notes: Collect debuffs and enemy casts
 ## Version: r20
 ## Author: enderneko
 ## SavedVariables: ISC_Config,ISC_Data,ISC_Spell,ISC_AuraDesc,ISC_NpcId,ISC_Ignore
-## AddonCompartmentFunc: ISC_OnAddonCompartmentClick
-## IconTexture: interface/icons/inv_sigil_ulduarall.blp
+## OptionalDeps: DBM-Core
 
 ## X-Curse-Project-ID: 867852
 
-Libs\LoadLibs.xml
+Libs\LoadLibs_Classic.xml
 
+InstanceNames.lua
 Core.lua
 Collector.lua
+MinimapButton.lua

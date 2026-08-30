@@ -1,32 +1,28 @@
-# Instance Spell Collector for WotLK 3.3.5a
+<div align="center">
 
-This repository is being prepared as a compatibility backport of
-[Instance Spell Collector](https://github.com/enderneko/InstanceSpellCollector)
-for World of Warcraft 3.3.5a.
+# Instance Spell Collector WotLK
 
-Instance Spell Collector records debuffs and enemy casts encountered in
-instances. The original addon is created and maintained by
-[enderneko](https://github.com/enderneko).
+[![Latest release](https://img.shields.io/github/v/release/NoM0Re/Instance-Spell-Collector-WotLK?label=release)](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/releases/latest) [![Discord](https://img.shields.io/discord/259362419372064778?style=flat&logo=discord&label=Discord)](https://discord.gg/UXSc7nt) [![GitHub Issues](https://img.shields.io/github/issues/NoM0Re/Instance-Spell-Collector-WotLK)](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/issues) [![PayPal](https://img.shields.io/badge/Buy_me_a_coffee-100000?style=flat&logo=PayPal&logoColor=white&labelColor=3b7bbf&color=grey)](https://streamelements.com/nom0ree/tip)
 
-## Project status
+[![Cell logo](https://media.forgecdn.net/avatars/thumbnails/825/37/256/256/638210508907513442.png)](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/releases/latest)
+</div>
 
-Repository infrastructure is in place, but the addon source has not yet been
-imported or ported. No usable WotLK release is currently provided here.
+Collect debuffs and enemy casts!
 
-The future backport will remain close to upstream and make only the
-compatibility changes required by the 3.3.5a client and Lua 5.1.
+## Quick Start
 
-## Upstream
+To open the options window, type `/isc` into your chat and hit enter.
 
-- [Source repository](https://github.com/enderneko/InstanceSpellCollector)
-- [CurseForge project](https://www.curseforge.com/wow/addons/instance-spell-collector)
-- [Upstream releases](https://github.com/enderneko/InstanceSpellCollector/releases)
+## Install
 
-The upstream project is published as **All Rights Reserved**. This repository
-does not relicense the original addon or imply ownership of enderneko's work.
+1. [Download the latest release package](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/releases/latest/download/Instance-Spell-Collector.zip).
+2. Open the archive and extract all addon folders to `Interface\AddOns`.
 
-## Development
+## Client Extensions
 
-Repository setup and contribution guidance are documented in
-[`CONTRIBUTING.md`](CONTRIBUTING.md). Addon-specific implementation work will
-begin separately.
+- [Deadly Boss Mods](https://github.com/Zidras/DBM-Warmane#how-to-install-for-the-first-time) Provides reliable encounter IDs and boss names, allowing collected spells to be organized under the correct encounter for cleaner and more useful exports. Collection also works without DBM.
+
+## Problems
+
+* If you've discovered something that's clearly wrong, or if you get an error, please create a [ticket](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/issues).
+* Feel free to join our [Discord Community](https://discord.gg/UXSc7nt) to talk, get help and discuss everything about Instance Spell Collector

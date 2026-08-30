@@ -7,18 +7,12 @@ local accentColor = {0.6, 0.1, 0.1, 1}
 -- Tooltip
 -----------------------------------------
 local function CreateTooltip(name)
-    local tooltip = CreateFrame("GameTooltip", name, nil, "ISCTooltipTemplate,BackdropTemplate")
+    local tooltip = CreateFrame("GameTooltip", name, UIParent, "ISCTooltipTemplate")
+    tooltip:SetFrameLevel(UIParent:GetFrameLevel() + 1)
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
 
-    local extraTip = CreateFrame("GameTooltip", name.."ExtraTip", tooltip, "ISCExtraTooltipTemplate,BackdropTemplate")
-
-    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-        tooltip:RegisterEvent("TOOLTIP_DATA_UPDATE")
-        tooltip:SetScript("OnEvent", function()
-            -- Interface\FrameXML\GameTooltip.lua line924
-            tooltip:RefreshData()
-        end)
-    end
+    local extraTip = CreateFrame("GameTooltip", name.."ExtraTip", tooltip, "ISCExtraTooltipTemplate")
+    extraTip:SetFrameLevel(tooltip:GetFrameLevel() + 1)
 
     tooltip:SetScript("OnTooltipCleared", function()
         -- reset border color

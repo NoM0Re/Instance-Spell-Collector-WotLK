@@ -1,66 +1,126 @@
-name: Bug Report
-description: Report a reproducible problem with the WotLK backport
-labels: ["bug"]
+name: "Bug Report"
+description: Create a report to help us improve
+labels: ["🐛 Bug"]
 body:
   - type: checkboxes
     attributes:
-      label: Existing issue
+      label: Is there an existing issue for this?
+      description: Please [search for existing issues](https://github.com/NoM0Re/Instance-Spell-Collector-WotLK/issues) to see if an open or closed one already exists for the bug you encountered. A completed fix may not yet be included in a stable release.
       options:
-        - label: I searched open and closed issues for this problem.
+        - label: I have searched the existing open and closed issues.
           required: true
 
   - type: textarea
     attributes:
       label: Description
-      description: What did you expect, and what happened instead?
+      description: What did you expect to happen and what happened instead?
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Addon version
-      placeholder: "r20-wotlk.1"
+      label: Instance Spell Collector Version
+      description: Check the collector title bar or the `## Version:` field in `!InstanceSpellCollector.toc`.
+      placeholder: "Instance Spell Collector r20"
     validations:
       required: true
 
   - type: dropdown
+    id: language
     attributes:
-      label: Client
+      label: World of Warcraft Language
+      description: In which language do you play World of Warcraft?
       options:
-        - WotLK 3.3.5a
+        - enGB/enUS
+        - deDE
+        - frFR
+        - itIT
+        - esES
+        - esMX
+        - koKR
+        - ptBR
+        - ruRU
+        - zhCN
+        - zhTW
+    validations:
+      required: true
+
+  - type: input
+    id: server
+    attributes:
+      label: Server and realm
+      description: On which server and realm are you playing?
+      placeholder: Warmane-Icecrown
+    validations:
+      required: true
+
+  - type: input
+    id: instance
+    attributes:
+      label: Instance and encounter
+      description: Include the difficulty and English instance/encounter name when relevant.
+      placeholder: "Icecrown Citadel 25 Heroic, Lord Marrowgar"
+
+  - type: input
+    id: dbm
+    attributes:
+      label: DBM status and version
+      description: State whether DBM is installed and include its version when the problem involves encounter detection.
+      placeholder: "Not installed / DBM-Warmane 3.3.5 version ..."
+
+  - type: dropdown
+    id: testing
+    attributes:
+      label: Tested with only Instance Spell Collector
+      description: Other addons can alter events, tooltips, maps, frame levels, or collected data. Please reproduce the issue with only the required addons enabled.
+      options:
+        - I got this issue with only Instance Spell Collector enabled
+        - I got this issue with only Instance Spell Collector and DBM enabled
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Lua Error
+      description: |
+        Paste the complete error and stack trace. If no errors are visible, enable them with `/console scriptErrors 1` or install both BugSack and BugGrabber.
+      render: Text
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: Please list the exact steps required to reproduce the problem.
+      placeholder: |
+        1. Enter '...'
+        2. Select '...'
+        3. Trigger '...'
+        4. See error
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Locale and server
-      placeholder: "deDE, server name"
+      label: Last Good Version
+      description: Was it working in a previous version? If yes, which was the last good one?
+      placeholder: "Instance Spell Collector r20 / commit ..."
     validations:
-      required: true
+      required: false
 
   - type: textarea
     attributes:
-      label: Reproduction steps
-      placeholder: |
-        1. Enter ...
-        2. Use ...
-        3. Observe ...
+      label: Screenshots
+      description: If applicable, attach screenshots that help explain the problem.
+      placeholder: Click here to attach screenshots using the editor button in the top right.
     validations:
-      required: true
+      required: false
 
   - type: textarea
     attributes:
-      label: Lua error
-      description: Paste the complete error if one was produced.
+      label: Collector Export or SavedVariables
+      description: Paste the relevant collector export or attach a ZIP of `!InstanceSpellCollector.lua` from `WTF\Account\YOUR_ACCOUNT\SavedVariables\`. Remove anything you consider private first.
+      placeholder: Paste the relevant collector export here.
       render: Text
-
-  - type: textarea
-    attributes:
-      label: Additional context
-      description: Include screenshots, collected data, or SavedVariables when relevant.
-
-  - type: checkboxes
-    attributes:
-      label: Isolated test
-      options:
-        - label: I tested with only Instance Spell Collector enabled.
+    validations:
+      required: false
